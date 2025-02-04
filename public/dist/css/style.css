@@ -1,0 +1,61 @@
+/* CSS untuk tabel responsif dengan ID data1 */  
+#data1 {  
+    width: 100%; /* Memastikan tabel mengambil lebar penuh */  
+    border-collapse: collapse; /* Menghilangkan jarak antara border sel */  
+}  
+  
+#data1 th, #data1 td {  
+    padding: 10px; /* Memberikan padding pada sel */  
+    text-align: left; /* Mengatur teks ke kiri */  
+    border: 1px solid #ddd; /* Menambahkan border pada sel */  
+}  
+  
+#data1 th {  
+    background-color: #f2f2f2; /* Warna latar belakang untuk header */  
+}  
+
+.profile-pic {  
+    width: 100px; /* Atur lebar gambar */  
+    height: 100px; /* Atur tinggi gambar */  
+    object-fit: cover; /* Memastikan gambar tetap proporsional */  
+}  
+
+.rounded-circle {  
+    border-radius: 50%; /* Membuat gambar menjadi bulat */  
+}  
+
+  
+/* Media query untuk layar kecil */  
+@media (max-width: 600px) {  
+    #data1, #data1 thead, #data1 tbody, #data1 th, #data1 td, #data1 tr {  
+        display: block; /* Mengubah tampilan menjadi block */  
+    }  
+  
+    #data1 thead tr {  
+        position: absolute; /* Menghilangkan header dari aliran dokumen */  
+        top: -9999px; /* Menempatkan header di luar tampilan */  
+        left: -9999px;  
+    }  
+  
+    #data1 tr {  
+        margin-bottom: 15px; /* Menambahkan jarak antar baris */  
+    }  
+  
+    #data1 td {  
+        text-align: right; /* Mengatur teks ke kanan */  
+        position: relative; /* Mengatur posisi relatif untuk pseudo-element */  
+        padding-left: 50%; /* Memberikan ruang untuk label */  
+    }  
+  
+    #data1 td::before {  
+        content: attr(data-label); /* Mengambil nilai dari atribut data-label */  
+        position: absolute; /* Mengatur posisi absolut */  
+        left: 10px; /* Menempatkan label di kiri */  
+        width: calc(50% - 20px); /* Mengatur lebar label */  
+        padding-right: 10px; /* Memberikan ruang di kanan */  
+        text-align: left; /* Mengatur teks ke kiri */  
+        font-weight: bold; /* Membuat label menjadi tebal */  
+    }  
+}  
+
+
