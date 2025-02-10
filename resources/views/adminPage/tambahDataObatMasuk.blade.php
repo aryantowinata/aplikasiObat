@@ -9,7 +9,6 @@
         <div class="col-sm-6">
           <h1 class="m-0"><i class="fa-solid fa-pen-to-square"></i> Tambah Data Obat Masuk</h1>
         </div>
-        <!-- /.col -->
         <div class="col-sm-6">
           <ol class="breadcrumb float-sm-right">
             <li class="breadcrumb-item active">
@@ -17,22 +16,14 @@
             </li>
           </ol>
         </div>
-        <!-- /.col -->
       </div>
-      <!-- /.row -->
     </div>
-    <!-- /.container-fluid -->
   </div>
-  <!-- /.content-header -->
 
   <!-- Main content -->
   <div class="content">
     <div class="container-fluid">
       <div class="card card-outline card-info">
-        <!-- <div class="card-header">
-    <h3 class="card-title"></h3>
-  </div> -->
-        <!-- /.card-header -->
         <div class="card-body">
           <form action="{{ route('admin.simpan.obat-masuk') }}" method="POST">
             @csrf
@@ -44,21 +35,26 @@
               <label for="tanggalObatMasuk">Tanggal Obat Masuk</label>
               <input type="date" class="form-control" id="tanggalObatMasuk" name="tanggal_obat_masuk" />
             </div>
+
+            <!-- Ubah Dropdown Kode Obat Menjadi Nama Obat -->
             <div class="form-group">
-              <label for="kodeObat">Kode Obat</label>
-              <select class="form-control" id="kodeObat" name="kode_obat">
-                <option value="">Pilih Kode Obat</option>
+              <label for="namaObat">Nama Obat</label>
+              <select class="form-control" id="namaObat" name="nama_obat">
+                <option value="">Pilih Nama Obat</option>
                 @foreach ($dataObatMasuk as $obat)
-                <option value="{{ $obat->kode_obat }}" data-nama="{{ $obat->nama_obat }}">
-                  {{ $obat->kode_obat }}
+                <option value="{{ $obat->nama_obat }}" data-kode="{{ $obat->kode_obat }}">
+                  {{ $obat->nama_obat }}
                 </option>
                 @endforeach
               </select>
             </div>
+
+            <!-- Kode Obat Akan Terisi Otomatis -->
             <div class="form-group">
-              <label for="namaObat">Nama Obat</label>
-              <input type="text" class="form-control" id="namaObat" name="nama_obat" />
+              <label for="kodeObat">Kode Obat</label>
+              <input type="text" class="form-control" id="kodeObat" name="kode_obat" />
             </div>
+
             <div class="form-group">
               <label for="satuan">Satuan</label>
               <input type="text" class="form-control" id="satuan" name="satuan" />
@@ -74,17 +70,10 @@
             <button class="btn btn-lg btn-info" type="submit">Simpan</button>
             <a href="{{ route('admin.data-obat-masuk') }}" class="btn btn-lg btn-warning">Batal</a>
           </form>
-
         </div>
-        <!-- /.card-body -->
       </div>
-
-      <!-- /.row -->
     </div>
-    <!-- /.container-fluid -->
   </div>
-  <!-- /.content -->
 </div>
-<!-- /.content-wrapper -->
 
 @endsection

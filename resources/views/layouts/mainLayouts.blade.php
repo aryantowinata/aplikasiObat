@@ -206,17 +206,16 @@ scratch. This page gets rid of all links and provides the needed markup only.
   </script>
 
   <script>
-    // Ketika kode obat dipilih
-    $('#kodeObat').on('change', function() {
+    // Ketika nama obat dipilih
+    $('#namaObat').on('change', function() {
       var selectedOption = $(this).find('option:selected'); // Mengambil option yang dipilih
-      var namaObat = selectedOption.data('nama'); // Mengambil nama obat dari data atribut
+      var kodeObat = selectedOption.data('kode'); // Mengambil kode obat dari data atribut
 
-
-      // Isi field nama obat dengan nama obat yang dipilih
-      $('#namaObat').val(namaObat);
-
+      // Isi field kode obat dengan kode yang sesuai
+      $('#kodeObat').val(kodeObat);
     });
   </script>
+
 
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script>
@@ -270,6 +269,14 @@ scratch. This page gets rid of all links and provides the needed markup only.
         text: "{{ session('success') }}",
         icon: 'success',
         confirmButtonText: 'OK'
+      });
+      @endif
+
+      @if(session('error'))
+      Swal.fire({
+        icon: 'error',
+        title: 'Oops...',
+        text: '{{ session("error") }}',
       });
       @endif
     });

@@ -7,13 +7,13 @@
         <div class="container-fluid">
             <div class="row mb-2">
                 <div class="col-sm-6">
-                    <h1 class="m-0"><i class="fa-solid fa-pen-to-square"></i> Edit Data Obat Masuk</h1>
+                    <h1 class="m-0"><i class="fa-solid fa-pen-to-square"></i> Edit Data Obat Keluar</h1>
                 </div>
                 <!-- /.col -->
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
                         <li class="breadcrumb-item active">
-                            <i class="fa-solid fa-folder"></i> <a href="{{ route('admin.data-obat-masuk') }}">Data Obat Masuk</a> > Edit
+                            <i class="fa-solid fa-folder"></i> <a href="{{ route('admin.data-obat-keluar', ['id' => $tujuanPertama->id]) }}">Data Obat Keluar</a> > Edit
                         </li>
                     </ol>
                 </div>
@@ -43,20 +43,24 @@
                             <input type="date" class="form-control" id="tanggalObatMasuk" name="tanggal_distribusi" value="{{ $obatKeluar->tanggal_distribusi }}" />
                         </div>
                         <div class="form-group">
-                            <label for="kodeObat">Kode Obat</label>
-                            <select class="form-control" id="kodeObat" name="kode_obat">
-                                <option value="{{ $obatKeluar->kode_obat }}">{{ $obatKeluar->kode_obat }}</option>
+                            <label for="namaObat">Nama Obat</label>
+                            <select class="form-control" id="namaObat" name="nama_obat">
+                                <option value="">Pilih Nama Obat</option>
                                 @foreach ($obatList as $obat)
-                                <option value="{{ $obat->kode_obat }}" data-nama="{{ $obat->nama_obat }}">
-                                    {{ $obat->kode_obat }}
+                                <option value="{{ $obat->nama_obat }}" data-kode="{{ $obat->kode_obat }}"
+                                    {{ $obatKeluar->nama_obat == $obat->nama_obat ? 'selected' : '' }}>
+                                    {{ $obat->nama_obat }}
                                 </option>
                                 @endforeach
                             </select>
                         </div>
+
+                        <!-- Kode Obat Terisi Otomatis -->
                         <div class="form-group">
-                            <label for="namaObat">Nama Obat</label>
-                            <input type="text" class="form-control" id="namaObat" name="nama_obat" value="{{ $obatKeluar->nama_obat }}" />
+                            <label for="kodeObat">Kode Obat</label>
+                            <input type="text" class="form-control" id="kodeObat" name="kode_obat" value="{{ $obatKeluar->kode_obat }}" readonly />
                         </div>
+
                         <div class="form-group">
                             <label for="satuan">Satuan</label>
                             <input type="text" class="form-control" id="satuan" name="satuan" value="{{ $obatKeluar->satuan }}" />

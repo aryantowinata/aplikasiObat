@@ -36,20 +36,23 @@
                             <input type="date" class="form-control" id="tanggalObatMasuk" name="tanggal_distribusi" />
                         </div>
                         <div class="form-group">
-                            <label for="kodeObat">Kode Obat</label>
-                            <select class="form-control" id="kodeObat" name="kode_obat">
-                                <option value="">Pilih Kode Obat</option>
+                            <label for="namaObat">Nama Obat</label>
+                            <select class="form-control" id="namaObat" name="nama_obat">
+                                <option value="">Pilih Nama Obat</option>
                                 @foreach ($obatList as $obat)
-                                <option value="{{ $obat->kode_obat }}" data-nama="{{ $obat->nama_obat }}">
-                                    {{ $obat->kode_obat }}
+                                <option value="{{ $obat->nama_obat }}" data-kode="{{ $obat->kode_obat }}">
+                                    {{ $obat->nama_obat }}
                                 </option>
                                 @endforeach
                             </select>
                         </div>
+
+                        <!-- Kode Obat Akan Terisi Otomatis -->
                         <div class="form-group">
-                            <label for="namaObat">Nama Obat</label>
-                            <input type="text" class="form-control" id="namaObat" name="nama_obat" />
+                            <label for="kodeObat">Kode Obat</label>
+                            <input type="text" class="form-control" id="kodeObat" name="kode_obat" />
                         </div>
+
                         <div class="form-group">
                             <label for="satuan">Satuan</label>
                             <input type="text" class="form-control" id="satuan" name="satuan" />
@@ -79,4 +82,5 @@
         </div>
     </div>
 </div>
+
 @endsection

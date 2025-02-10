@@ -42,7 +42,7 @@
               @foreach ($dataObatMasuk as $key => $obatMasuk)
               <tr>
                 <td data-label="No">{{ $key + 1 }}</td>
-                <td data-label="Kode Obat Masuk">{{ $obatMasuk->kode_obat }}</td>
+                <td data-label="Kode Obat Masuk">{{ $obatMasuk->kode_obat_masuk }}</td>
                 <td data-label="Tanggal Masuk">{{ \Carbon\Carbon::parse($obatMasuk->tanggal_masuk)->format('d-m-Y') }}</td>
                 <td data-label="Kode Obat">{{ $obatMasuk->kode_obat }}</td>
                 <td data-label="Nama Obat">{{ $obatMasuk->nama_obat }}</td>

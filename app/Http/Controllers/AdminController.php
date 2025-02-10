@@ -269,7 +269,9 @@ class AdminController extends Controller
 
     public function updateDataObatMasuk(Request $request, $id)
     {
+        // Validasi input
         $request->validate([
+            'kode_obat' => 'required|string',
             'nama_obat' => 'required|string|max:255',
             'satuan' => 'required|string|max:50',
             'jumlah' => 'required|integer',
@@ -277,32 +279,50 @@ class AdminController extends Controller
             'tanggal_kadaluarsa' => 'required|date',
         ]);
 
+        // Temukan data obat masuk berdasarkan ID
         $obatMasuk = ObatMasuk::findOrFail($id);
 
-        // Ambil data obat berdasarkan kode_obat
-        $obat = Obat::where('kode_obat', $request->kode_obat)->first();
+        // Ambil data obat lama sebelum diupdate
+        $obatLama = Obat::where('kode_obat', $obatMasuk->kode_obat)->first();
 
-        if ($obat) {
-            // Hitung selisih jumlah obat masuk
-            $selisihJumlah = $request->jumlah - $obatMasuk->jumlah;
+        // Ambil data obat baru yang dipilih
+        $obatBaru = Obat::where('kode_obat', $request->kode_obat)->first();
 
-            // Update jumlah obat di tabel Obat
-            $obat->jumlah += $selisihJumlah;
-            $obat->save();
+        // Jika kode obat berubah (artinya user mengganti nama obat)
+        if ($obatMasuk->kode_obat !== $request->kode_obat) {
+            // Kembalikan stok obat lama sebelum perubahan
+            if ($obatLama) {
+                $obatLama->jumlah -= $obatMasuk->jumlah;
+                $obatLama->save();
+            }
 
-            // Update data obat masuk
-            $obatMasuk->update([
-                'kode_obat' => $obat->kode_obat,
-                'nama_obat' => $obat->nama_obat,
-                'satuan' => $request->satuan,
-                'jumlah' => $request->jumlah,
-                'tanggal_obat_masuk' => $request->tanggal_obat_masuk,
-                'tanggal_kadaluarsa' => $request->tanggal_kadaluarsa,
-            ]);
+            // Tambahkan stok ke obat baru
+            if ($obatBaru) {
+                $obatBaru->jumlah += $request->jumlah;
+                $obatBaru->save();
+            }
+        } else {
+            // Jika hanya jumlah yang berubah (tanpa mengganti nama obat)
+            if ($obatLama) {
+                $selisihJumlah = $request->jumlah - $obatMasuk->jumlah;
+                $obatLama->jumlah += $selisihJumlah;
+                $obatLama->save();
+            }
         }
 
-        return redirect()->route('admin.data-obat-masuk')->with('success', 'Data obat berhasil diperbarui!');
+        // Update data obat masuk
+        $obatMasuk->update([
+            'kode_obat' => $request->kode_obat,
+            'nama_obat' => $request->nama_obat,
+            'satuan' => $request->satuan,
+            'jumlah' => $request->jumlah,
+            'tanggal_obat_masuk' => $request->tanggal_obat_masuk,
+            'tanggal_kadaluarsa' => $request->tanggal_kadaluarsa,
+        ]);
+
+        return redirect()->route('admin.data-obat-masuk')->with('success', 'Data obat masuk berhasil diperbarui!');
     }
+
 
     public function persediaan(Request $request)
     {
@@ -442,50 +462,59 @@ class AdminController extends Controller
     {
         // Validasi input
         $request->validate([
+            'kode_obat' => 'required|string',
             'satuan' => 'required|string|max:50',
             'jumlah' => 'required|integer',
             'tanggal_distribusi' => 'required|date',
             'tanggal_kadaluarsa' => 'required|date',
-            'id_tempat' => 'required|integer|exists:tempats,id', // Validasi id_tempat
+            'id_tempat' => 'required|integer|exists:tempats,id',
         ]);
 
         // Ambil data obat berdasarkan kode_obat
         $obat = Obat::where('kode_obat', $request->kode_obat)->first();
         $tempat_tujuan = Tempat::find($request->id_tempat);
 
-        // Pastikan tempat tujuan ditemukan
         if (!$tempat_tujuan) {
             return redirect()->back()->with('error', 'Tempat tujuan tidak ditemukan.');
         }
 
-        // Jika obat ditemukan
-        if ($obat) {
-            $obat->jumlah -= $request->jumlah;  // Kurangi jumlah obat yang keluar
-            $obat->save();
-
-            $kodeObatKeluar = 'OBAT-' . time(); // Format: OBAT-{timestamp}
-
-            // Simpan data obat keluar
-            ObatKeluar::create([
-                'kode_obat_keluar' => $kodeObatKeluar,
-                'kode_obat' => $obat->kode_obat,
-                'nama_obat' => $obat->nama_obat,
-                'satuan' => $request->satuan,
-                'jumlah' => $request->jumlah,
-                'tanggal_distribusi' => $request->tanggal_distribusi,
-                'tujuan' => $tempat_tujuan->nama_tempat,
-                'id_tempat' => $tempat_tujuan->id,
-                'tanggal_kadaluarsa' => $request->tanggal_kadaluarsa,
-            ]);
+        if (!$obat) {
+            return redirect()->back()->with('error', 'Obat tidak ditemukan.');
         }
 
-        // Redirect setelah berhasil menyimpan
+        // Cek apakah jumlah yang diminta lebih dari stok yang tersedia
+        if ($request->jumlah > $obat->jumlah) {
+            return redirect()->back()->with('error', 'Jumlah obat tidak mencukupi!')->withInput();
+        }
+
+        // Kurangi stok obat
+        $obat->jumlah -= $request->jumlah;
+        $obat->save();
+
+        // Generate kode obat keluar
+        $kodeObatKeluar = 'OBAT-' . time();
+
+        // Simpan data obat keluar
+        ObatKeluar::create([
+            'kode_obat_keluar' => $kodeObatKeluar,
+            'kode_obat' => $obat->kode_obat,
+            'nama_obat' => $obat->nama_obat,
+            'satuan' => $request->satuan,
+            'jumlah' => $request->jumlah,
+            'tanggal_distribusi' => $request->tanggal_distribusi,
+            'tujuan' => $tempat_tujuan->nama_tempat,
+            'id_tempat' => $tempat_tujuan->id,
+            'tanggal_kadaluarsa' => $request->tanggal_kadaluarsa,
+        ]);
+
         return redirect()->route('admin.data-obat-keluar', $tempat_tujuan->id)->with('success', 'Data obat keluar berhasil ditambahkan!');
     }
 
 
+
     public function editDataObatKeluar(Request $request, $id)
     {
+        $tujuanPertama = Tempat::all()->first();
         // Ambil data obat keluar berdasarkan ID
         $obatKeluar = ObatKeluar::with('tempats')->findOrFail($id);
 
@@ -506,6 +535,7 @@ class AdminController extends Controller
             'tujuan' => $tujuan,
             'tempat' => $tempat,
             'user' => $user,
+            'tujuanPertama' => $tujuanPertama,
         ];
 
         // Tampilkan view editDataObatKeluar dengan data obatKeluar dan tempat terkait
@@ -527,7 +557,10 @@ class AdminController extends Controller
 
     public function updateDataObatKeluar(Request $request, $id)
     {
+        // Validasi input
         $request->validate([
+            'kode_obat' => 'required|string',
+            'nama_obat' => 'required|string|max:255',
             'satuan' => 'required|string|max:50',
             'jumlah' => 'required|integer',
             'tanggal_distribusi' => 'required|date',
@@ -535,33 +568,55 @@ class AdminController extends Controller
         ]);
 
         $obatKeluar = ObatKeluar::findOrFail($id);
+        $obatLama = Obat::where('kode_obat', $obatKeluar->kode_obat)->first();
+        $obatBaru = Obat::where('kode_obat', $request->kode_obat)->first();
 
-        // Ambil data obat berdasarkan kode_obat
-        $obat = Obat::where('kode_obat', $request->kode_obat)->first();
-
-        if ($obat) {
-            // Hitung selisih antara jumlah baru dan jumlah sebelumnya
-            $selisihJumlah = $request->jumlah - $obatKeluar->jumlah;
-
-            // Update jumlah obat di tabel Obat berdasarkan selisih
-            $obat->jumlah -= $selisihJumlah;
-            $obat->save();
-
-            // Update data obat keluar
-            $obatKeluar->update([
-                'kode_obat' => $obat->kode_obat,
-                'nama_obat' => $obat->nama_obat,
-                'satuan' => $request->satuan,
-                'jumlah' => $request->jumlah,
-                'tanggal_distribusi' => $request->tanggal_distribusi,
-                'tanggal_kadaluarsa' => $request->tanggal_kadaluarsa,
-                'tujuan' => $obatKeluar->tujuan,
-                'id_tempat' => $obatKeluar->id_tempat,
-            ]);
+        if (!$obatBaru) {
+            return redirect()->back()->with('error', 'Obat tidak ditemukan.');
         }
 
-        // Redirect setelah berhasil menyimpan
-        return redirect()->route('admin.data-obat-keluar', $obatKeluar->id_tempat)->with('success', 'Data obat keluar berhasil diupdate!');
+        // Jika kode obat berubah (ganti obat)
+        if ($obatKeluar->kode_obat !== $request->kode_obat) {
+            // Kembalikan stok ke obat lama sebelum perubahan
+            if ($obatLama) {
+                $obatLama->jumlah += $obatKeluar->jumlah;
+                $obatLama->save();
+            }
+
+            // Cek apakah stok cukup sebelum dikurangi
+            if ($request->jumlah > $obatBaru->jumlah) {
+                return redirect()->back()->with('error', 'Jumlah obat tidak mencukupi!')->withInput();
+            }
+
+            // Kurangi stok dari obat baru
+            $obatBaru->jumlah -= $request->jumlah;
+            $obatBaru->save();
+        } else {
+            // Jika hanya jumlah yang berubah
+            $selisihJumlah = $request->jumlah - $obatKeluar->jumlah;
+
+            // Cek apakah stok cukup jika jumlah bertambah
+            if ($selisihJumlah > 0 && $selisihJumlah > $obatLama->jumlah) {
+                return redirect()->back()->with('error', 'Jumlah obat tidak mencukupi!')->withInput();
+            }
+
+            $obatLama->jumlah -= $selisihJumlah;
+            $obatLama->save();
+        }
+
+        // Update data obat keluar
+        $obatKeluar->update([
+            'kode_obat' => $request->kode_obat,
+            'nama_obat' => $request->nama_obat,
+            'satuan' => $request->satuan,
+            'jumlah' => $request->jumlah,
+            'tanggal_distribusi' => $request->tanggal_distribusi,
+            'tanggal_kadaluarsa' => $request->tanggal_kadaluarsa,
+            'tujuan' => $obatKeluar->tujuan,
+            'id_tempat' => $obatKeluar->id_tempat,
+        ]);
+
+        return redirect()->route('admin.data-obat-keluar', $obatKeluar->id_tempat)->with('success', 'Data obat keluar berhasil diperbarui!');
     }
 
     public function laporan(Request $request)
